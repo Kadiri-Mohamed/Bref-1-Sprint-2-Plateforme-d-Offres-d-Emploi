@@ -189,6 +189,11 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const saveProfile = () => {
         // TODO: Implement profile saving
+        profileForm.addEventListener('submit', (e) => {
+            renderProfileForm();
+            e.preventDefault();
+            localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(userProfile));
+        })
     };
 
     /**
@@ -197,6 +202,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const loadProfile = () => {
         // TODO: Implement profile loading
+        const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
+        if (saved) userProfile = JSON.parse(saved);
     };
 
     /**
@@ -204,12 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * @function renderProfileSkills
      */
     const renderProfileSkills = () => {
-        // TODO: Implement skills rendering
-        // Use this HTML template for each skill:
-        // `<li class="profile-skill-tag" data-skill="${skill}">
-        //     <span>${skill}</span>
-        //     <button class="profile-skill-remove" aria-label="Remove skill ${skill}">✕</button>
-        //  </li>`
+
     };
 
     /**
@@ -218,6 +220,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const renderProfileForm = () => {
         // TODO: Populate form fields with saved profile data
+        profileNameInput.value = userProfile.name || '';
+        profilePositionInput.value = userProfile.position || '';
     };
 
     /**
