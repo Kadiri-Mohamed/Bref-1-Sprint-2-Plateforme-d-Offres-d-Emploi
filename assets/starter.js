@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
             favoriteJobIds = favoriteJobIds.filter(id => id !== jobId);
             e.target.classList.remove("job-card__favorite-btn--active");
             e.target.innerHTML = '☆'
-            favoriteJobsContainer.lastElementChild.remove();
+            favoriteJobsContainer.removeChild(favoriteJobIds.indexOf(jobId));
         } else {
 
             e.target.classList.add("job-card__favorite-btn--active");
