@@ -273,6 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const saveFavorites = () => {
         // TODO: Implement favorites saving
+        localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteJobIds));
     };
 
     /**
@@ -281,6 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const loadFavorites = () => {
         // TODO: Implement favorites loading
+        const favoritesids = localStorage.getItem(FAVORITES_STORAGE_KEY);
+        return favoritesids ? JSON.parse(favoritesids) : [];
     };
 
     /**
@@ -289,8 +292,11 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const renderFavoritesCount = () => {
         // TODO: Update favorites count in tab
-    };
 
+        favoritesCount.textContent = favoriteJobIds.length;
+
+    };
+    favoriteJobIds = loadFavorites();
     /**
      * Renders favorite jobs in favorites tab
      * @function renderFavoriteJobs
@@ -300,13 +306,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Filter jobs by favorite IDs
         // 2. Use createJobCardHTML for each job
         // 3. Show empty message if no favorites
+        // favoriteJobIds = loadFavorites();
         let buttons = document.getElementsByClassName("job-card__favorite-btn");
         for (let button of buttons) {
             button.addEventListener("click", (e) => {
                 const idFav = Number(e.target.getAttribute("data-job-id"));
                 toggleFavorite(idFav, e);
+                
             });
         }
+        for (let jobId of favoriteJobIds) {
+            favoriteJobsContainer.innerHTML += createJobCardHTML(allJobs.find((job) => job.id === jobId));
+        }
+        saveFavorites();
 
     };
 
@@ -322,18 +334,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Save to localStorage
         // 4. Update UI
 
+        let index = favoriteJobIds.indexOf(jobId)
+        e.target.classList.toggle("job-card__favorite-btn--active");
         if (favoriteJobIds.includes(jobId)) {
             favoriteJobIds = favoriteJobIds.filter(id => id !== jobId);
-            e.target.classList.remove("job-card__favorite-btn--active");
             e.target.innerHTML = '☆'
-            favoriteJobsContainer.removeChild(favoriteJobIds.indexOf(jobId));
+            const cardToRemove = favoriteJobsContainer.querySelector(`[data-job-id="${jobId}"]`);
+            if (cardToRemove) {
+                cardToRemove.remove();
+            }
         } else {
-
-            e.target.classList.add("job-card__favorite-btn--active");
             e.target.innerHTML = '★'
             favoriteJobIds.push(jobId);
             favoriteJobsContainer.innerHTML += createJobCardHTML(allJobs[jobId - 1]);
         }
+
+        renderFavoritesCount();
+        saveFavorites();
 
         console.log("Favorites:", favoriteJobIds);
         // console.log(favoriteJobIds);
