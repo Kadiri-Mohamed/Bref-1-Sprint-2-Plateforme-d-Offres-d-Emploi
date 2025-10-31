@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
         favoritesCount.textContent = favoriteJobIds.length;
 
     };
-    favoriteJobIds = loadFavorites();
+    // favoriteJobIds = loadFavorites();
     /**
      * Renders favorite jobs in favorites tab
      * @function renderFavoriteJobs
@@ -307,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Use createJobCardHTML for each job
         // 3. Show empty message if no favorites
         // favoriteJobIds = loadFavorites();
+        favoriteJobIds = loadFavorites();
         let buttons = document.getElementsByClassName("job-card__favorite-btn");
         for (let button of buttons) {
             button.addEventListener("click", (e) => {
@@ -315,11 +316,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 
             });
         }
+        favoriteJobsContainer.innerHTML = ""
         for (let jobId of favoriteJobIds) {
             favoriteJobsContainer.innerHTML += createJobCardHTML(allJobs.find((job) => job.id === jobId));
         }
-        saveFavorites();
-
     };
 
     /**
