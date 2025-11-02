@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             handleProfileSave(e);
         })
     };
-    
+
     /**
      * Handles profile form submission
      * @function handleProfileSave
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderProfileSkills();
         }
         skillInput.value = "";
-         let buttons = document.getElementsByClassName("profile-skill-remove");
+        let buttons = document.getElementsByClassName("profile-skill-remove");
         for (let button of buttons) {
             button.addEventListener("click", (e) => {
                 handleSkillRemove(e);
@@ -504,17 +504,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderManageList = () => {
         // TODO: Implement manage list rendering
         // Use this HTML template for each job:
-        // `<li class="manage-job-item" data-job-id="${job.id}">
-        //     <img src="${job.logo}" alt="" class="job-card__logo" style="position: static; width: 48px; height: 48px; border-radius: 5px;">
-        //     <div class="manage-job-item__info">
-        //         <h4>${job.position}</h4>
-        //         <p>${job.company} - ${job.location}</p>
-        //     </div>
-        //     <div class="manage-job-item__actions">
-        //         <button class="btn btn--secondary btn-edit">Edit</button>
-        //         <button class="btn btn--danger btn-delete">Delete</button>
-        //     </div>
-        //  </li>`
+        manageJobsList.innerHTML = "";
+
+        if (allJobs.length === 0) {
+            manageJobsList.innerHTML = `<p>No jobs available</p>`;
+            return;
+        }
+
+        allJobs.forEach(job => {
+            manageJobsList.innerHTML += `
+        <li class="manage-job-item" data-job-id="${job.id}">
+            <img src="${job.logo || `https://api.dicebear.com/8.x/initials/svg?seed=${job.company}`}" 
+                 alt="${job.company} logo" 
+                 class="job-card__logo" 
+                 style="position: static; width: 48px; height: 48px; border-radius: 5px;">
+            <div class="manage-job-item__info">
+                <h4>${job.position}</h4>
+                <p>${job.company} - ${job.location}</p>
+            </div>
+            <div class="manage-job-item__actions">
+                <button class="btn btn--secondary btn-edit">Edit</button>
+                <button class="btn btn--danger btn-delete">Delete</button>
+            </div>
+        </li>`;
+        });
+
+        manageJobsList.querySelectorAll('.btn-edit').forEach(btn =>
+            btn.addEventListener('click', handleManageListClick)
+        );
+        manageJobsList.querySelectorAll('.btn-delete').forEach(btn =>
+            btn.addEventListener('click', handleManageListClick)
+        );
+
     };
 
     /**
@@ -530,6 +551,35 @@ document.addEventListener('DOMContentLoaded', () => {
         // 4. Add new job or update existing
         // 5. Save to localStorage
         // 6. Update UI and close modal
+        e.preventDefault();
+
+        const newJob = {
+            id: allJobs.length,
+            company: jobCompanyInput.value.trim(),
+            position: jobPositionInput.value.trim(),
+            logo: jobLogoInput.value.trim(),
+            contract: jobContractInput.value.trim(),
+            location: jobLocationInput.value.trim(),
+            role: jobRoleInput.value.trim(),
+            level: jobLevelInput.value.trim(),
+            skills: jobSkillsInput.value.split(',').map(s => s.trim()),
+            description: jobDescriptionInput.value.trim(),
+            postedAt: new Date().toLocaleDateString(),
+            new: true,
+            featured: false
+        };
+
+        if (jobId) {
+            const index = allJobs.findIndex(j => j.id === jobId);
+            if (index !== -1) allJobs[index] = newJob;
+        } else {
+            allJobs.push(newJob);
+        }
+
+        saveAllJobs();
+        renderManageList();
+        renderJobs(allJobs);
+        closeManageModal();
     };
 
     /**
@@ -543,7 +593,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Get job ID
         // 3. For edit: open manage modal with job data
         // 4. For delete: confirm and remove job
+        const listItem = e.target.closest('.manage-job-item');
+        const jobId = Number(listItem.getAttribute('data-job-id'));
+
+        if (e.target.classList.contains('btn-edit')) {
+            openManageModal(jobId);
+        }
+
+        if (e.target.classList.contains('btn-delete')) {
+            if (confirm('you want to delete this job?')) {
+                allJobs = allJobs.filter(j => j.id !== jobId);
+                saveAllJobs();
+                renderManageList();
+                renderJobs(allJobs);
+            }
+        }
     };
+    manageJobForm.addEventListener('submit', handleManageFormSubmit);
+    addNewJobBtn.addEventListener('click', () => openManageModal());
 
     // ------------------------------------
     // --- JOB RENDERING ---
