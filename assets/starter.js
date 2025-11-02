@@ -659,6 +659,18 @@ document.addEventListener('DOMContentLoaded', () => {
         jobListingsContainer.innerHTML = jobsToRender.length > 0
             ? jobsToRender.map(createJobCardHTML).join('')
             : '<p class="job-listings__empty">No jobs match your search.</p>';
+
+        const jobCards = document.querySelectorAll('.job-card');
+        for(let card of jobCards ){
+            card.addEventListener('click', (e) => {
+                if (e.target.classList.contains('job-card__favorite-btn')) {
+                    return
+                }else{                 
+                    const jobId = Number(card.getAttribute('data-job-id'));
+                    openViewModal(jobId);
+                }
+            });
+        }
     };
 
     /** q
