@@ -189,11 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const saveProfile = () => {
         // TODO: Implement profile saving
-        profileForm.addEventListener('submit', (e) => {
-            renderProfileForm();
-            e.preventDefault();
-            localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(userProfile));
-        })
+        localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(userProfile));
+
     };
 
     /**
@@ -211,7 +208,14 @@ document.addEventListener('DOMContentLoaded', () => {
      * @function renderProfileSkills
      */
     const renderProfileSkills = () => {
+        profileSkillsList.innerHTML = "";
+        userProfile.skills.forEach(skill => {
 
+            profileSkillsList.innerHTML += `<li class="profile-skill-tag" data-skill="${skill}">
+            <span>${skill}</span>
+            <button class="profile-skill-remove" aria-label="Remove skill ${skill}">✕</button>
+         </li>`
+        })
     };
 
     /**
@@ -220,10 +224,13 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const renderProfileForm = () => {
         // TODO: Populate form fields with saved profile data
-        profileNameInput.value = userProfile.name || '';
-        profilePositionInput.value = userProfile.position || '';
+        profileForm.addEventListener("submit", (e) => {
+            userProfile.name = profileNameInput.value
+            userProfile.position = profilePositionInput.value
+            handleProfileSave(e);
+        })
     };
-
+    
     /**
      * Handles profile form submission
      * @function handleProfileSave
@@ -235,6 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Validate form
         // 3. Save profile data
         // 4. Update filters if needed
+        e.preventDefault();
+        handleSkillAdd(e);
+        saveProfile();
+        // renderProfileSkills();
     };
 
     /**
@@ -248,6 +259,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Get skill value
         // 3. Add to profile if not duplicate
         // 4. Re-render skills and apply filters
+
+        e.preventDefault();
+        const newSkill = skillInput.value.trim();
+
+        if (newSkill && !userProfile.skills.includes(newSkill)) {
+            userProfile.skills.push(newSkill);
+            renderProfileSkills();
+        }
+        skillInput.value = "";
+         let buttons = document.getElementsByClassName("profile-skill-remove");
+        for (let button of buttons) {
+            button.addEventListener("click", (e) => {
+                handleSkillRemove(e);
+            });
+        }
+
+
     };
 
     /**
@@ -261,6 +289,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Get skill name
         // 3. Remove from profile
         // 4. Re-render and apply filters
+        const skillToRemove = e.target.parentElement
+        skillToRemove.remove()
+        userProfile.skills = userProfile.skills.filter(skill => skill !== skillToRemove.getAttribute("data-skill"))
+        saveProfile();
     };
 
     // ------------------------------------
@@ -307,19 +339,21 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Use createJobCardHTML for each job
         // 3. Show empty message if no favorites
         // favoriteJobIds = loadFavorites();
+
         favoriteJobIds = loadFavorites();
         let buttons = document.getElementsByClassName("job-card__favorite-btn");
         for (let button of buttons) {
             button.addEventListener("click", (e) => {
                 const idFav = Number(e.target.getAttribute("data-job-id"));
                 toggleFavorite(idFav, e);
-                
+
             });
         }
         favoriteJobsContainer.innerHTML = ""
         for (let jobId of favoriteJobIds) {
             favoriteJobsContainer.innerHTML += createJobCardHTML(allJobs.find((job) => job.id === jobId));
         }
+        renderFavoritesCount();
     };
 
     /**
@@ -335,17 +369,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // 4. Update UI
 
         let index = favoriteJobIds.indexOf(jobId)
-        e.target.classList.toggle("job-card__favorite-btn--active");
+        // e.target.classList.toggle("job-card__favorite-btn--active");
         if (favoriteJobIds.includes(jobId)) {
             favoriteJobIds = favoriteJobIds.filter(id => id !== jobId);
             e.target.innerHTML = '☆'
+            e.target.classList.remove("job-card__favorite-btn--active");
             const cardToRemove = favoriteJobsContainer.querySelector(`[data-job-id="${jobId}"]`);
             if (cardToRemove) {
                 cardToRemove.remove();
             }
+
         } else {
             e.target.innerHTML = '★'
             favoriteJobIds.push(jobId);
+            e.target.classList.add("job-card__favorite-btn--active");
             favoriteJobsContainer.innerHTML += createJobCardHTML(allJobs[jobId - 1]);
         }
 
